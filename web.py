@@ -75,6 +75,24 @@ def evaluate(optimize, version):
     else:
         return {"result": out.replace(b"\xff", b"", 1).decode(errors="replace")}
 
+@route("/test.json", method=["POST", "OPTIONS"])
+@enable_post_cors
+@extractor("version", "master", ("master",))
+@extractor("optimize", "2", ("0", "1", "2", "3"))
+def test(optimize, version):
+    out, _ = execute(version, "/usr/local/bin/test.sh", (optimize,), request.json["code"])
+
+    if request.json.get("separate_output") is True:
+        split = out.split(b"\xff", 1)
+
+        ret = {"rustc": split[0].decode()}
+        if len(split) == 2: # compilation succeeded
+            ret["program"] = split[1].decode(errors="replace")
+
+        return ret
+    else:
+        return {"result": out.replace(b"\xff", b"", 1).decode(errors="replace")}
+
 @route("/format.json", method=["POST", "OPTIONS"])
 @enable_post_cors
 @extractor("version", "master", ("master",))

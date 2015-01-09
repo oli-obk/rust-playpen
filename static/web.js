@@ -69,6 +69,18 @@ function evaluate(result, code, version, optimize) {
     });
 }
 
+function test(result, code, version, optimize) {
+    send("/test.json", {code: code, version: version, optimize: optimize},
+         function(object) {
+          result.textContent = object["result"];
+
+          var div = document.createElement("div");
+          div.className = "message";
+          div.textContent = "Tests finished.";
+          result.appendChild(div);
+    });
+}
+
 function compile(emit, result, code, version, optimize) {
     send("/compile.json", {emit: emit, code: code, version: version, optimize: optimize,
                            highlight: true},
@@ -180,6 +192,7 @@ function set_theme(editor, themelist, theme) {
 
 addEventListener("DOMContentLoaded", function() {
     var evaluateButton = document.getElementById("evaluate");
+    var testButton = document.getElementById("test");
     var asmButton = document.getElementById("asm");
     var irButton = document.getElementById("llvm-ir");
     var formatButton = document.getElementById("format");
@@ -241,6 +254,11 @@ addEventListener("DOMContentLoaded", function() {
 
     evaluateButton.onclick = function() {
         evaluate(result, session.getValue(), version.options[version.selectedIndex].text,
+                 optimize.options[optimize.selectedIndex].value);
+    };
+
+    testButton.onclick = function() {
+        test(result, session.getValue(), version.options[version.selectedIndex].text,
                  optimize.options[optimize.selectedIndex].value);
     };
 
